@@ -5,5 +5,5 @@ install:
 .PHONY: install
 
 test:
-	go test -v
+	go test -v -cover
 .PHONY: test
