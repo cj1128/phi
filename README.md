@@ -1,6 +1,12 @@
-# fasthttp chi
+# <img alt="phi" src="https://cdn.rawgit.com/fate-lovely/phi/master/phi.svg" width="220" />
 
-port [chi](https://github.com/go-chi/chi) to fasthttp.
+[![GoDoc Widget]][GoDoc] [![Travis Widget]][Travis] [![License Widget]][License] [![GoReport Widget]][GoReport]
+
+`phi` is a package which ports [chi](https://github.com/go-chi/chi) to fasthttp.
+
+## Install
+
+`go get -u github.com/fate-lovely/phi`
 
 ## Example
 
@@ -115,3 +121,15 @@ output:
 |    `POST /user`     |     200     |      new user+user+reqid=1       |
 | `GET /user/nothing` |     404     |    no such user+user+reqid=1     |
 
+## License
+
+Licensed under [MIT License](http://mit-license.org/2017)
+
+[License]: http://mit-license.org/2017
+[License Widget]: http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square
+[GoDoc]: https://godoc.org/github.com/fate-lovely/phi
+[GoDoc Widget]: https://godoc.org/github.com/fate-lovely/phi?status.svg
+[Travis]: https://travis-ci.org/fate-lovely/phi
+[Travis Widget]: https://travis-ci.org/fate-lovely/phi.svg?branch=master
+[GoReport Widget]: https://goreportcard.com/badge/github.com/fate-lovely/phi
+[GoReport]: https://goreportcard.com/report/github.com/fate-lovely/phi
