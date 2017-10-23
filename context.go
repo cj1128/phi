@@ -1,7 +1,6 @@
-package fasthttpchi
+package phi
 
 import (
-	"context"
 	"strings"
 
 	"github.com/valyala/fasthttp"
@@ -84,10 +83,10 @@ func (x *Context) URLParam(key string) string {
 //
 // For example,
 //
-// func Instrument(next http.Handler) http.Handler {
-//   return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//     next.ServeHTTP(w, r)
-//     routePattern := chi.RouteContext(r.Context()).RoutePattern()
+// func Instrument(next phi.HandlerFunc) phi.HandlerFunc {
+//   return func(ctx *fasthttp.RequestCtx) {
+//     next(ctx)
+//     routePattern := phi.RouteContext(ctx).RoutePattern()
 //     measure(w, r, routePattern)
 // 	 })
 // }
@@ -96,13 +95,13 @@ func (x *Context) RoutePattern() string {
 	return strings.Replace(routePattern, "/*/", "/", -1)
 }
 
-// RouteContext returns chi's routing Context object from a
-// http.Request Context.
+// RouteContext returns phi's routing Context object from
+// *fasthttp.RequestCtx
 func RouteContext(ctx *fasthttp.RequestCtx) *Context {
 	return ctx.UserValue(RouteCtxKey).(*Context)
 }
 
-// URLParam returns the url parameter from a http.Request object.
+// URLParam returns the url parameter from *fasthttp.RequestCtx
 func URLParam(ctx *fasthttp.RequestCtx, key string) string {
 	if rctx := RouteContext(ctx); rctx != nil {
 		return rctx.URLParam(key)
@@ -121,35 +120,15 @@ func (s *RouteParams) Add(key, value string) {
 	(*s).Values = append((*s).Values, value)
 }
 
-// ServerBaseContext wraps an http.Handler to set the request context to the
-// `baseCtx`.
-// TODO: need to verify this
-func ServerBaseContext(baseCtx context.Context, h Handler) Handler {
-	return h
-	// fn := HandlerFunc(func(ctx *fasthttp.RequestCtx) {
-	// 	ctx := r.Context()
-	// 	baseCtx := baseCtx
+/*----------  Internal  ----------*/
 
-	// 	// Copy over default net/http server context keys
-	// 	if v, ok := ctx.Value(http.ServerContextKey).(*http.Server); ok {
-	// 		baseCtx = context.WithValue(baseCtx, http.ServerContextKey, v)
-	// 	}
-	// 	if v, ok := ctx.Value(http.LocalAddrContextKey).(net.Addr); ok {
-	// 		baseCtx = context.WithValue(baseCtx, http.LocalAddrContextKey, v)
-	// 	}
-
-	// 	h.ServeHTTP(w, r.WithContext(baseCtx))
-	// })
-	// return fn
-}
-
-// contextKey is a value for use with context.WithValue. It's used as
-// a pointer so it fits in an interface{} without allocation. This technique
-// for defining context keys was copied from Go 1.7's new use of context in net/http.
+// contextKey is used as key for setting value in ctx.SetUserValue
+// using contextKey rather than a plain string is to prevent collision with
+// used defined key
 type contextKey struct {
 	name string
 }
 
 func (k *contextKey) String() string {
-	return "chi context value " + k.name
+	return "phi context key: " + k.name
 }

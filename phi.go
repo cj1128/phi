@@ -1,7 +1,7 @@
 //
-// Package chi is a small, idiomatic and composable router for building HTTP services.
+// Package phi is a small, idiomatic and composable router for building HTTP services.
 //
-// chi requires Go 1.7 or newer.
+// phi requires Go 1.7 or newer.
 //
 // Example:
 //  package main
@@ -9,12 +9,11 @@
 //  import (
 //  	"net/http"
 //
-//  	"github.com/go-chi/chi"
-//  	"github.com/go-chi/chi/middleware"
+//  	"github.com/fate-lovely/phi"
 //  )
 //
 //  func main() {
-//  	r := chi.NewRouter()
+//  	r := phi.NewRouter()
 //  	r.Use(middleware.Logger)
 //  	r.Use(middleware.Recoverer)
 //
@@ -27,7 +26,7 @@
 //
 // See github.com/go-chi/chi/_examples/ for more in-depth examples.
 //
-package fasthttpchi
+package phi
 
 import (
 	"github.com/valyala/fasthttp"
@@ -46,7 +45,7 @@ func (fn HandlerFunc) ServeFastHTTP(ctx *fasthttp.RequestCtx) {
 type Middleware func(HandlerFunc) HandlerFunc
 
 // Middlewares type is a slice of standard middleware handlers with methods
-// to compose middleware chains and http.Handler's.
+// to compose middleware chains and phi.Handler's.
 // type Middlewares []func(Handler) Handler
 type Middlewares []Middleware
 
@@ -55,8 +54,7 @@ func NewRouter() *Mux {
 	return NewMux()
 }
 
-// Router consisting of the core routing methods used by chi's Mux,
-// using only the standard net/http.
+// Router consisting of the core routing methods used by phi's Mux,
 type Router interface {
 	Handler
 	Routes
@@ -74,7 +72,7 @@ type Router interface {
 	// Route mounts a sub-Router along a `pattern`` string.
 	Route(pattern string, fn func(r Router))
 
-	// Mount attaches another http.Handler along ./pattern/*
+	// Mount attaches another phi.Handler along ./pattern/*
 	Mount(pattern string, h Handler)
 
 	// Handle and HandleFunc adds routes for `pattern` that matches

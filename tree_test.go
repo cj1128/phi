@@ -1,4 +1,4 @@
-package fasthttpchi
+package phi
 
 import (
 	"fmt"

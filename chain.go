@@ -1,4 +1,4 @@
-package fasthttpchi
+package phi
 
 import (
 	"github.com/valyala/fasthttp"
@@ -9,19 +9,19 @@ func Chain(middlewares ...Middleware) Middlewares {
 	return Middlewares(middlewares)
 }
 
-// Handler builds and returns a http.Handler from the chain of middlewares,
-// with `h http.Handler` as the final handler.
+// Handler builds and returns a phi.Handler from the chain of middlewares,
+// with `h phi.HandlerFunc` as the final handler.
 func (mws Middlewares) Handler(h Handler) Handler {
 	return &ChainHandler{mws, h, chain(mws, h)}
 }
 
-// HandlerFunc builds and returns a http.Handler from the chain of middlewares,
-// with `h http.Handler` as the final handler.
+// HandlerFunc builds and returns a phi.Handler from the chain of middlewares,
+// with `h phi.HandlerFunc` as the final handler.
 func (mws Middlewares) HandlerFunc(h HandlerFunc) Handler {
 	return &ChainHandler{mws, h, chain(mws, h)}
 }
 
-// ChainHandler is a http.Handler with support for handler composition and
+// ChainHandler is a phi.Handler with support for handler composition and
 // execution.
 type ChainHandler struct {
 	Middlewares Middlewares
@@ -33,7 +33,7 @@ func (c *ChainHandler) ServeFastHTTP(ctx *fasthttp.RequestCtx) {
 	c.chain.ServeFastHTTP(ctx)
 }
 
-// chain builds a http.Handler composed of an inline middleware stack and endpoint
+// chain builds a phi.Handler composed of an inline middleware stack and endpoint
 // handler in the order they are passed.
 func chain(middlewares Middlewares, endpoint Handler) Handler {
 	// Return ahead of time if there aren't any middlewares for the chain

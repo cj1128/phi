@@ -1,4 +1,4 @@
-package fasthttpchi
+package phi
 
 // Radix tree implementation below is a based on the original work by
 // Armon Dadgar in https://github.com/armon/go-radix/blob/master/radix.go
@@ -53,7 +53,7 @@ func RegisterMethod(method string) {
 	}
 	n := len(methodMap)
 	if n > strconv.IntSize {
-		panic(fmt.Sprintf("chi: max number of methods reached (%d)", strconv.IntSize))
+		panic(fmt.Sprintf("phi: max number of methods reached (%d)", strconv.IntSize))
 	}
 	mt := methodTyp(math.Exp2(float64(n)))
 	methodMap[method] = mt
@@ -213,7 +213,7 @@ func (n *node) InsertRoute(method methodTyp, pattern string, handler Handler) *n
 }
 
 // addChild appends the new `child` node to the tree using the `pattern` as the trie key.
-// For a URL router like chi's, we split the static, param, regexp and wildcard segments
+// For a URL router like phi's, we split the static, param, regexp and wildcard segments
 // into different nodes. In addition, addChild will recursively call itself until every
 // pattern segment is added to the url pattern tree as individual nodes, depending on type.
 func (n *node) addChild(child *node, prefix string) *node {
@@ -239,7 +239,7 @@ func (n *node) addChild(child *node, prefix string) *node {
 		if segTyp == ntRegexp {
 			rex, err := regexp.Compile(segRexpat)
 			if err != nil {
-				panic(fmt.Sprintf("chi: invalid regexp pattern '%s' in route param", segRexpat))
+				panic(fmt.Sprintf("phi: invalid regexp pattern '%s' in route param", segRexpat))
 			}
 			child.prefix = segRexpat
 			child.rex = rex
@@ -309,7 +309,7 @@ func (n *node) replaceChild(label, tail byte, child *node) {
 			return
 		}
 	}
-	panic("chi: replacing missing child")
+	panic("phi: replacing missing child")
 }
 
 func (n *node) getEdge(ntyp nodeTyp, label, tail byte, prefix string) *node {
@@ -557,7 +557,7 @@ func (n *node) findPattern(pattern string) bool {
 			idx = longestPrefix(pattern, "*")
 
 		default:
-			panic("chi: unknown node type")
+			panic("phi: unknown node type")
 		}
 
 		xpattern = pattern[idx:]
@@ -649,7 +649,7 @@ func patNextSegment(pattern string) (nodeTyp, string, string, byte, int, int) {
 
 	// Sanity check
 	if ps >= 0 && ws >= 0 && ws < ps {
-		panic("chi: wildcard '*' must be the last pattern in a route, otherwise use a '{param}'")
+		panic("phi: wildcard '*' must be the last pattern in a route, otherwise use a '{param}'")
 	}
 
 	var tail byte = '/' // Default endpoint tail to / byte
@@ -673,7 +673,7 @@ func patNextSegment(pattern string) (nodeTyp, string, string, byte, int, int) {
 			}
 		}
 		if pe == ps {
-			panic("chi: route param closing delimiter '}' is missing")
+			panic("phi: route param closing delimiter '}' is missing")
 		}
 
 		key := pattern[ps+1 : pe]
@@ -717,7 +717,7 @@ func patParamKeys(pattern string) []string {
 		}
 		for i := 0; i < len(paramKeys); i++ {
 			if paramKeys[i] == paramKey {
-				panic(fmt.Sprintf("chi: routing pattern '%s' contains duplicate param key, '%s'", pattern, paramKey))
+				panic(fmt.Sprintf("phi: routing pattern '%s' contains duplicate param key, '%s'", pattern, paramKey))
 			}
 		}
 		paramKeys = append(paramKeys, paramKey)
