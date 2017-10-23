@@ -29,7 +29,7 @@ type ChainHandler struct {
 	chain       Handler
 }
 
-func (c *ChainHandler) ServeFastHTTP(ctx *fasthttp.RequestCtx) {
+func (c *ChainHandler) ServeFastHTTP(ctx *fasthttp.RequestCtx) { // nolint
 	c.chain.ServeFastHTTP(ctx)
 }
 

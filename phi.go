@@ -120,16 +120,22 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
+// Handler represents a fasthttp request handler,
+// it has one method: ServeFastHTTP, which is equal to fasthttp.RequestHandler
 type Handler interface {
 	ServeFastHTTP(ctx *fasthttp.RequestCtx)
 }
 
+// HandlerFunc type is an adapter to allow the use of
+// ordinary functions as handlers.
 type HandlerFunc func(ctx *fasthttp.RequestCtx)
 
+// ServeFastHTTP calss fn(ctx)
 func (fn HandlerFunc) ServeFastHTTP(ctx *fasthttp.RequestCtx) {
 	fn(ctx)
 }
 
+// Middleware represents phi middlewares, which accept a HandlerFunc and return a HandlerFunc
 type Middleware func(HandlerFunc) HandlerFunc
 
 // Middlewares type is a slice of standard middleware handlers with methods

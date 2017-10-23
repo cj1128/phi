@@ -54,7 +54,7 @@ func NewMux() *Mux {
 	return mux
 }
 
-// ServeHTTP is the single method of the phi.Handler interface that makes
+// ServeFastHTTP is the single method of the phi.Handler interface that makes
 // Mux interoperable with the standard library. It uses a sync.Pool to get and
 // reuse routing contexts for each request.
 func (mx *Mux) ServeFastHTTP(ctx *fasthttp.RequestCtx) {
@@ -249,7 +249,7 @@ func (mx *Mux) Route(pattern string, fn func(r Router)) {
 // Note that Mount() simply sets a wildcard along the `pattern` that will continue
 // routing at the `handler`, which in most cases is another phi.Router. As a result,
 // if you define two Mount() routes on the exact same pattern the mount will panic.
-func (mx *Mux) Mount(pattern string, handler Handler) {
+func (mx *Mux) Mount(pattern string, handler Handler) { // nolint: gocyclo
 	// Provide runtime safety for ensuring a pattern isn't mounted on an existing
 	// routing pattern.
 	if mx.tree.findPattern(pattern+"*") || mx.tree.findPattern(pattern+"/*") {

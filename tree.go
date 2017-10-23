@@ -28,7 +28,7 @@ const (
 	mTRACE
 )
 
-var mALL methodTyp = mCONNECT | mDELETE | mGET | mHEAD |
+var mALL = mCONNECT | mDELETE | mGET | mHEAD |
 	mOPTIONS | mPATCH | mPOST | mPUT | mTRACE
 
 var methodMap = map[string]methodTyp{
@@ -43,6 +43,8 @@ var methodMap = map[string]methodTyp{
 	"TRACE":   mTRACE,
 }
 
+// RegisterMethod registers new methods which can be used in
+// `Router.Method` call
 func RegisterMethod(method string) {
 	if method == "" {
 		return
@@ -328,7 +330,7 @@ func (n *node) getEdge(ntyp nodeTyp, label, tail byte, prefix string) *node {
 func (n *node) setEndpoint(method methodTyp, handler Handler, pattern string) {
 	// Set the handler for the method type on the node
 	if n.endpoints == nil {
-		n.endpoints = make(endpoints, 0)
+		n.endpoints = make(endpoints)
 	}
 
 	paramKeys := patParamKeys(pattern)
@@ -380,6 +382,7 @@ func (n *node) FindRoute(rctx *Context, method methodTyp, path string) (*node, e
 	return rn, rn.endpoints, rn.endpoints[method].handler
 }
 
+// nolint: gocyclo
 // Recursive edge traversal by checking all nodeTyp groups along the way.
 // It's like searching through a multi-dimensional radix trie.
 func (n *node) findRoute(rctx *Context, method methodTyp, path string) *node {
@@ -430,7 +433,7 @@ func (n *node) findRoute(rctx *Context, method methodTyp, path string) *node {
 				}
 
 				if ntyp == ntRegexp && xn.rex != nil {
-					if xn.rex.Match([]byte(xsearch[:p])) == false {
+					if !xn.rex.Match([]byte(xsearch[:p])) {
 						continue
 					}
 				} else if strings.IndexByte(xsearch[:p], '/') != -1 {
@@ -457,7 +460,7 @@ func (n *node) findRoute(rctx *Context, method methodTyp, path string) *node {
 		// did we find it yet?
 		if len(xsearch) == 0 {
 			if xn.isLeaf() {
-				h, _ := xn.endpoints[method]
+				h := xn.endpoints[method]
 				if h != nil && h.handler != nil {
 					rctx.routeParams.Keys = append(rctx.routeParams.Keys, h.paramKeys...)
 					return xn
@@ -515,15 +518,6 @@ func (n *node) findEdge(ntyp nodeTyp, label byte) *node {
 	}
 }
 
-func (n *node) isEmpty() bool {
-	for _, nds := range n.children {
-		if len(nds) > 0 {
-			return false
-		}
-	}
-	return true
-}
-
 func (n *node) isLeaf() bool {
 	return n.endpoints != nil
 }
@@ -570,6 +564,7 @@ func (n *node) findPattern(pattern string) bool {
 	return false
 }
 
+// nolint: gocyclo
 func (n *node) routes() []Route {
 	rts := []Route{}
 
@@ -579,7 +574,7 @@ func (n *node) routes() []Route {
 		}
 
 		// Group methodHandlers by unique patterns
-		pats := make(map[string]endpoints, 0)
+		pats := make(map[string]endpoints)
 
 		for mt, h := range eps {
 			if h.pattern == "" {
@@ -594,7 +589,7 @@ func (n *node) routes() []Route {
 		}
 
 		for p, mh := range pats {
-			hs := make(map[string]Handler, 0)
+			hs := make(map[string]Handler)
 			if mh[mALL] != nil && mh[mALL].handler != nil {
 				hs["*"] = mh[mALL].handler
 			}
@@ -637,6 +632,7 @@ func (n *node) walk(fn func(eps endpoints, subroutes Routes) bool) bool {
 	return false
 }
 
+// nolint: gocyclo
 // patNextSegment returns the next segment details from a pattern:
 // node type, param key, regexp string, param tail byte, param starting index, param ending index
 func patNextSegment(pattern string) (nodeTyp, string, string, byte, int, int) {

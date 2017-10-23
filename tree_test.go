@@ -369,26 +369,27 @@ func TestTreeFindPattern(t *testing.T) {
 	tr.InsertRoute(mGET, "/articles/{id}/*", hStub2)
 	tr.InsertRoute(mGET, "/articles/{slug}/{uid}/*", hStub3)
 
-	if tr.findPattern("/pages") != false {
+	if tr.findPattern("/pages") {
 		t.Errorf("find /pages failed")
 	}
-	if tr.findPattern("/pages*") != false {
+	if tr.findPattern("/pages*") {
 		t.Errorf("find /pages* failed - should be nil")
 	}
-	if tr.findPattern("/pages/*") == false {
+	if !tr.findPattern("/pages/*") {
 		t.Errorf("find /pages/* failed")
 	}
-	if tr.findPattern("/articles/{id}/*") == false {
+	if !tr.findPattern("/articles/{id}/*") {
 		t.Errorf("find /articles/{id}/* failed")
 	}
-	if tr.findPattern("/articles/{something}/*") == false {
+	if !tr.findPattern("/articles/{something}/*") {
 		t.Errorf("find /articles/{something}/* failed")
 	}
-	if tr.findPattern("/articles/{slug}/{uid}/*") == false {
+	if !tr.findPattern("/articles/{slug}/{uid}/*") {
 		t.Errorf("find /articles/{slug}/{uid}/* failed")
 	}
 }
 
+// nolint
 func debugPrintTree(parent int, i int, n *node, label byte) bool {
 	numEdges := 0
 	for _, nds := range n.children {
