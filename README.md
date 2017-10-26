@@ -11,97 +11,114 @@
 ## Example
 
 ```go
-r := NewRouter()
+package main
 
-reqIDMW := func(next HandlerFunc) HandlerFunc {
-  return func(ctx *fasthttp.RequestCtx) {
-    next(ctx)
-    ctx.WriteString("+reqid=1")
-  }
-}
-r.Use(reqIDMW)
+import (
+  "log"
+  "time"
 
-r.Get("/", func(ctx *fasthttp.RequestCtx) {
-  ctx.WriteString("index")
-})
-r.NotFound(func(ctx *fasthttp.RequestCtx) {
-  ctx.WriteString("whoops, not found")
-  ctx.SetStatusCode(404)
-})
-r.MethodNotAllowed(func(ctx *fasthttp.RequestCtx) {
-  ctx.WriteString("whoops, bad method")
-  ctx.SetStatusCode(405)
-})
+  "github.com/fate-lovely/phi"
+  "github.com/valyala/fasthttp"
+)
 
-// tasks
-r.Group(func(r Router) {
-  mw := func(next HandlerFunc) HandlerFunc {
+func main() {
+  r := phi.NewRouter()
+
+  reqIDMW := func(next phi.HandlerFunc) phi.HandlerFunc {
     return func(ctx *fasthttp.RequestCtx) {
       next(ctx)
-      ctx.WriteString("+task")
+      ctx.WriteString("+reqid=1")
     }
   }
-  r.Use(mw)
+  r.Use(reqIDMW)
 
-  r.Get("/task", func(ctx *fasthttp.RequestCtx) {
-    ctx.WriteString("task")
+  r.Get("/", func(ctx *fasthttp.RequestCtx) {
+    ctx.WriteString("index")
   })
-  r.Post("/task", func(ctx *fasthttp.RequestCtx) {
-    ctx.WriteString("new task")
-  })
-
-  caution := func(next HandlerFunc) HandlerFunc {
-    return func(ctx *fasthttp.RequestCtx) {
-      next(ctx)
-      ctx.WriteString("+caution")
-    }
-  }
-  r.With(caution).Delete("/task", func(ctx *fasthttp.RequestCtx) {
-    ctx.WriteString("delete task")
-  })
-})
-
-// cat
-r.Route("/cat", func(r Router) {
   r.NotFound(func(ctx *fasthttp.RequestCtx) {
-    ctx.WriteString("no such cat")
+    ctx.WriteString("whoops, not found")
     ctx.SetStatusCode(404)
   })
-  r.Use(func(next HandlerFunc) HandlerFunc {
+  r.MethodNotAllowed(func(ctx *fasthttp.RequestCtx) {
+    ctx.WriteString("whoops, bad method")
+    ctx.SetStatusCode(405)
+  })
+
+  // tasks
+  r.Group(func(r phi.Router) {
+    mw := func(next phi.HandlerFunc) phi.HandlerFunc {
+      return func(ctx *fasthttp.RequestCtx) {
+        next(ctx)
+        ctx.WriteString("+task")
+      }
+    }
+    r.Use(mw)
+
+    r.Get("/task", func(ctx *fasthttp.RequestCtx) {
+      ctx.WriteString("task")
+    })
+    r.Post("/task", func(ctx *fasthttp.RequestCtx) {
+      ctx.WriteString("new task")
+    })
+
+    caution := func(next phi.HandlerFunc) phi.HandlerFunc {
+      return func(ctx *fasthttp.RequestCtx) {
+        next(ctx)
+        ctx.WriteString("+caution")
+      }
+    }
+    r.With(caution).Delete("/task", func(ctx *fasthttp.RequestCtx) {
+      ctx.WriteString("delete task")
+    })
+  })
+
+  // cat
+  r.Route("/cat", func(r phi.Router) {
+    r.NotFound(func(ctx *fasthttp.RequestCtx) {
+      ctx.WriteString("no such cat")
+      ctx.SetStatusCode(404)
+    })
+    r.Use(func(next phi.HandlerFunc) phi.HandlerFunc {
+      return func(ctx *fasthttp.RequestCtx) {
+        next(ctx)
+        ctx.WriteString("+cat")
+      }
+    })
+    r.Get("/", func(ctx *fasthttp.RequestCtx) {
+      ctx.WriteString("cat")
+    })
+    r.Patch("/", func(ctx *fasthttp.RequestCtx) {
+      ctx.WriteString("patch cat")
+    })
+  })
+
+  // user
+  userRouter := phi.NewRouter()
+  userRouter.NotFound(func(ctx *fasthttp.RequestCtx) {
+    ctx.WriteString("no such user")
+    ctx.SetStatusCode(404)
+  })
+  userRouter.Use(func(next phi.HandlerFunc) phi.HandlerFunc {
     return func(ctx *fasthttp.RequestCtx) {
       next(ctx)
-      ctx.WriteString("+cat")
+      ctx.WriteString("+user")
     }
   })
-  r.Get("/", func(ctx *fasthttp.RequestCtx) {
-    ctx.WriteString("cat")
+  userRouter.Get("/", func(ctx *fasthttp.RequestCtx) {
+    ctx.WriteString("user")
   })
-  r.Patch("/", func(ctx *fasthttp.RequestCtx) {
-    ctx.WriteString("patch cat")
+  userRouter.Post("/", func(ctx *fasthttp.RequestCtx) {
+    ctx.WriteString("new user")
   })
-})
+  r.Mount("/user", userRouter)
 
-// user
-userRouter := NewRouter()
-userRouter.NotFound(func(ctx *fasthttp.RequestCtx) {
-  ctx.WriteString("no such user")
-  ctx.SetStatusCode(404)
-})
-userRouter.Use(func(next HandlerFunc) HandlerFunc {
-  return func(ctx *fasthttp.RequestCtx) {
-    next(ctx)
-    ctx.WriteString("+user")
+  server := &fasthttp.Server{
+    Handler:     r.ServeFastHTTP,
+    ReadTimeout: 10 * time.Second,
   }
-})
-userRouter.Get("/", func(ctx *fasthttp.RequestCtx) {
-  ctx.WriteString("user")
-})
-userRouter.Post("/", func(ctx *fasthttp.RequestCtx) {
-  ctx.WriteString("new user")
-})
-r.Mount("/user", userRouter)
 
-return r
+  log.Fatal(server.ListenAndServe(":7789"))
+}
 ```
 
 output:
